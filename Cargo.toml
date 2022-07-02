@@ -1,0 +1,21 @@
+[package]
+name = "saves-sync-server"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+actix = "0.13.0"
+actix-web = "4.1.0"
+
+tokio = { version = "1.19.2", features = ["full"] }
+log = "0.4.17"
+pretty_env_logger = "0.4.0"
+
+serde = "1"
+serde_with = "1"
+
+sqlx = { version = "0.6", features = ["all-databases", "runtime-tokio-rustls" ] }
+dotenv = "0.15.0"
+tera = "1"
