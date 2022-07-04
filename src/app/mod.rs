@@ -11,7 +11,7 @@ pub fn register_urls(cfg: &mut ServiceConfig) {
 }
 
 pub fn setup_templates(cfg: &mut ServiceConfig) {
-    let tera = Tera::new(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/**/*")).unwrap();
+    let tera = Tera::new(concat!(env!("CARGO_MANIFEST_DIR"), "/views/**/*")).unwrap();
 
     cfg.app_data(web::Data::new(tera));
 }

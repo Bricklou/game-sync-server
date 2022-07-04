@@ -1,0 +1,11 @@
+button {
+  @apply px-4 py-1 rounded-full bg-yellow-500 text-white shadow-md transition-all;
+
+  &:hover {
+    @apply bg-yellow-400 scale-105 ease-in-out duration-100;
+  }
+
+  &:active {
+    @apply bg-yellow-300;
+  }
+}
