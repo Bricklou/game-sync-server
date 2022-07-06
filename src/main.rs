@@ -1,15 +1,19 @@
-#[macro_use]
-extern crate pretty_env_logger;
 extern crate log;
+extern crate pretty_env_logger;
 extern crate tera;
 
 mod app;
 mod db;
 
 use actix_cors::Cors;
-use actix_web::middleware::{Compress, Logger};
-use actix_web::web::Data;
-use actix_web::{App, HttpServer};
+use actix_session::{storage::RedisSessionStore, SessionMiddleware};
+use actix_web::{
+    cookie::Key,
+    middleware::{Compress, Logger},
+    web::Data,
+    App, HttpServer,
+};
+use std::process::exit;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -27,6 +31,21 @@ async fn main() -> std::io::Result<()> {
     let server_port = dotenv::var("SERVER_PORT").unwrap_or("8080".to_string());
     let server_location = server_host + ":" + &server_port;
 
+    let redis_connection_string = std::env::var("REDIS_URL").expect("REDIS_URL not set");
+    let app_secret = dotenv::var("APP_SECRET").expect("APP_SECRET not set");
+
+    let store = RedisSessionStore::new(redis_connection_string)
+        .await
+        .unwrap();
+
+    match db::init_database(&server_data).await {
+        Err(e) => {
+            log::error!("Failed to create admin user: {}", e);
+            exit(1);
+        }
+        Ok(_) => {}
+    }
+
     HttpServer::new(move || {
         let cors_origin = dotenv::var("CORS_ORIGIN").unwrap_or_else(|_| "".to_string());
         let mut cors = Cors::default()
@@ -43,9 +62,14 @@ async fn main() -> std::io::Result<()> {
 
         App::new()
             .app_data(Data::new(server_data.clone()))
+            .configure(app::setup_data)
             .configure(app::setup_templates)
             .configure(app::register_urls)
             .wrap(cors)
+            .wrap(SessionMiddleware::new(
+                store.clone(),
+                Key::from(app_secret.as_bytes()),
+            ))
             .wrap(Logger::default())
             .wrap(Compress::default())
     })

@@ -1,0 +1,19 @@
+.input_container {
+  @apply relative mb-4;
+
+  .input {
+    @apply rounded-md px-2 py-1 transition-all text-black w-full shadow-md outline-none;
+
+    &:hover {
+      @apply scale-105 shadow-xl;
+    }
+
+    &:focus {
+      @apply outline-none scale-105 duration-150 ease-in-out;
+      @apply shadow-xl;
+    }
+  }
+  .error {
+    @apply text-sm ml-2 text-white italic;
+  }
+}

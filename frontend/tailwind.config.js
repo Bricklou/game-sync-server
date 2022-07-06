@@ -1,12 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   mode: 'jit',
-  content: [
-    './storage/framework/views/*.php',
-    './resources/views/**/*.blade.php',
-
-    './resources/app/**/*.{css,js,ts,tsx}'
-  ],
+  content: ['./src/app/**/*.{css,js,ts,tsx}'],
   darkMode: 'class',
   theme: {
     extend: {}

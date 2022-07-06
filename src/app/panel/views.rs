@@ -1,6 +1,6 @@
-use actix_web::{error, web, Error, HttpResponse};
+use actix_web::{error, web, HttpResponse};
 
-type AsyncHttpResponse = Result<HttpResponse, Error>;
+use crate::app::types::AsyncHttpResponse;
 
 pub async fn index(tmpl: web::Data<tera::Tera>) -> AsyncHttpResponse {
     let s = tmpl
