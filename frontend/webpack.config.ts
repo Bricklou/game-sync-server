@@ -1,5 +1,5 @@
 import path from 'path'
-import { Configuration, ProgressPlugin, DefinePlugin } from 'webpack'
+import { Configuration, ProgressPlugin } from 'webpack'
 import type { Configuration as DevServerConfiguration } from 'webpack-dev-server'
 import ESLintWebpackPlugin from 'eslint-webpack-plugin'
 import HtmlWebPackPlugin from 'html-webpack-plugin'
@@ -34,6 +34,7 @@ const webpack_config: WebpackConfig = {
   output: {
     path: resolve('../public'),
     filename: 'js/[name].js',
+    chunkFilename: 'js/[name].js',
     publicPath: baseURL('/')
   },
   devServer: {
@@ -71,9 +72,9 @@ const webpack_config: WebpackConfig = {
             loader: require.resolve('ts-loader'),
             options: {
               getCustomTransformers: () => ({
-                before: [IS_DEV && ReactRefreshTypeScript()].filter(Boolean)
+                before: [IS_DEV && IS_DEV_SERVER && ReactRefreshTypeScript()].filter(Boolean)
               }),
-              transpileOnly: IS_DEV
+              transpileOnly: IS_DEV && IS_DEV_SERVER
             }
           }
         ],
@@ -138,6 +139,28 @@ const webpack_config: WebpackConfig = {
       '@': resolve('./src/app')
     }
   },
+  optimization: {
+    minimize: !IS_DEV,
+    splitChunks: {
+      chunks: 'all',
+      minChunks: 1,
+      maxAsyncRequests: 30,
+      maxInitialRequests: 30,
+      cacheGroups: {
+        defaultVendors: {
+          test: /[\\/]node_modules[\\/]/,
+          priority: -10,
+          reuseExistingChunk: true,
+          name: 'vendors'
+        },
+        default: {
+          minChunks: 2,
+          priority: -20,
+          reuseExistingChunk: true
+        }
+      }
+    }
+  },
   plugins: [
     new ESLintWebpackPlugin({
       context: resolve('./src'),
@@ -148,6 +171,7 @@ const webpack_config: WebpackConfig = {
     new ProgressPlugin(),
     new HtmlWebPackPlugin({
       template: resolve('./src/html/index.html'),
+      filename: resolve('../views/index.html'),
       alwaysWriteToDisk: true
     }),
     new HtmlWebpackHarddiskPlugin({
@@ -156,8 +180,8 @@ const webpack_config: WebpackConfig = {
     new MiniCssExtractPlugin({
       // Options similar to the same options in webpackOptions.output
       // both options are optional
-      filename: IS_DEV ? '[name].css' : '[name].[contenthash].css',
-      chunkFilename: IS_DEV ? '[id].css' : '[id].[contenthash].css'
+      filename: IS_DEV ? 'css/[name].css' : 'css/[name].[contenthash].css',
+      chunkFilename: IS_DEV ? 'css/[id].css' : 'css/[id].[contenthash].css'
     })
   ]
 }
@@ -167,7 +191,10 @@ module.exports = () => {
     webpack_config.mode = 'production'
   } else {
     webpack_config.mode = 'development'
-    webpack_config.plugins?.push(new ReactRefreshWebpackPlugin())
+
+    if (IS_DEV_SERVER) {
+      webpack_config.plugins?.push(new ReactRefreshWebpackPlugin())
+    }
   }
   return webpack_config
 }

@@ -1,0 +1,38 @@
+.navbar {
+  @apply border-b border-gray-300 bg-red-400 p-4;
+
+  .container {
+    @apply px-10 md:mx-auto md:max-w-7xl;
+  }
+
+  .content {
+    @apply flex items-center justify-between h-12;
+  }
+
+  .title {
+    @apply uppercase font-bold text-white flex-shrink-0;
+  }
+
+  .left {
+    @apply flex items-center;
+  }
+
+  .right {
+  }
+
+  .links_container {
+    @apply hidden md:block;
+  }
+
+  .links {
+    @apply ml-10 flex items-baseline space-x-4;
+  }
+
+  .link {
+    @apply text-white;
+
+    &.active {
+      @apply text-red-400 bg-white rounded-md px-2 py-1;
+    }
+  }
+}

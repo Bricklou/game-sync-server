@@ -1,11 +1,11 @@
 .button {
-  @apply px-4 py-1 rounded-full bg-yellow-500 text-white shadow-md transition-all;
+  @apply px-4 py-1 rounded-full bg-white text-red-400 shadow-md transition-all;
 
   &:hover {
-    @apply bg-yellow-400 scale-105 ease-in-out duration-150 shadow-lg;
+    @apply bg-gray-100 scale-105 ease-in-out duration-150 shadow-lg;
   }
 
   &:active {
-    @apply bg-yellow-300 shadow-xl;
+    @apply bg-gray-200 shadow-xl;
   }
 }
