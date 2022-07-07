@@ -7,8 +7,6 @@ function PrivateRoute(): JSX.Element {
   const auth = useAppSelector((state: RootState) => state?.auth)
   const location = useLocation()
 
-  console.log('is user authenticated ?', auth)
-
   return auth.is_authenticated ? (
     <Outlet />
   ) : (

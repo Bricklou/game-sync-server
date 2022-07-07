@@ -24,15 +24,12 @@ export const register = createAsyncThunk<User>(`${name}/register`, async (userDa
   try {
     const response = await API.post('/auth/register', userData)
 
-    console.log('response: ', response)
     if (response.status === 200) {
       return response.data
     } else {
-      console.log('Error: ', response.data)
       return thunkAPI.rejectWithValue(response.data)
     }
   } catch (e) {
-    console.log('Error: ', e, (e as AxiosResponse).data)
     thunkAPI.rejectWithValue((e as AxiosResponse).data)
   }
 })
@@ -44,7 +41,6 @@ export const login = createAsyncThunk<User, { username: string; password: string
       const response = await API.post<User>('/auth', userData)
 
       if (response.status !== 200) {
-        console.log('Error: ', response.data)
         return thunkAPI.rejectWithValue(response.data)
       }
 
@@ -53,7 +49,6 @@ export const login = createAsyncThunk<User, { username: string; password: string
       const error = e as Error | AxiosError<ApiError | undefined>
       if (Axios.isAxiosError(error)) {
         const out = error?.response?.data?.error || error.message
-        console.log('Error: ', out)
         return thunkAPI.rejectWithValue(out)
       }
       return thunkAPI.rejectWithValue((e as Error).message)
@@ -66,7 +61,6 @@ export const refresh = createAsyncThunk<User>(`${name}/refresh`, async (userData
     const response = await API.get<User>('/auth')
 
     if (response.status !== 200) {
-      console.log('Error: ', response.data)
       return thunkAPI.rejectWithValue(response.data)
     }
 
@@ -75,7 +69,6 @@ export const refresh = createAsyncThunk<User>(`${name}/refresh`, async (userData
     const error = e as Error | AxiosError<ApiError | undefined>
     if (Axios.isAxiosError(error)) {
       const out = error?.response?.data?.error || error.message
-      console.log('Error: ', out)
       return thunkAPI.rejectWithValue(out)
     }
     return thunkAPI.rejectWithValue((e as Error).message)
@@ -128,7 +121,6 @@ export const authSlice = createSlice({
       state.is_loading = false
       state.user = undefined
       state.is_authenticated = false
-      console.log('login error: ', action)
       state.error = action.payload as string
       state.is_error = true
     })
