@@ -20,16 +20,9 @@ pub async fn login(
     hash: web::Data<Hash>,
     session: Session,
 ) -> AsyncHttpResponse {
-    let logged_user = User::login(&pool, &hash, &user.username, &user.password).await;
+    let logged_user = User::login(&pool, &hash, &user.username, &user.password).await?;
 
-    if let Err(e) = logged_user {
-        let error_obj = ErrorHandling::new(e.to_string());
-        return Ok(HttpResponse::InternalServerError().json(error_obj));
-    }
-
-    let obj = logged_user.unwrap();
-
-    if let Some(user) = obj {
+    if let Some(user) = logged_user {
         session.insert("user_id", user.id)?;
         Ok(HttpResponse::Ok().json(user))
     } else {
@@ -43,27 +36,32 @@ pub async fn refresh(
     session: Session,
     pool: web::Data<DbPool>,
 ) -> AsyncHttpResponse {
-    let id = session.get("user_id");
+    let id = session.get::<i32>("user_id");
 
     let not_authenticated_response =
         HttpResponse::Unauthorized().json(ErrorHandling::new("User not authenticated".to_string()));
 
-    if let Err(e) = id {
-        return Ok(HttpResponse::InternalServerError().json(ErrorHandling::new(
+    let resp = match id {
+        Err(_) => HttpResponse::InternalServerError().json(ErrorHandling::new(
             "Error while getting user session".to_string(),
-        )));
-    }
+        )),
+        Ok(id) => match id {
+            None => not_authenticated_response,
+            Some(id) => {
+                let user = User::get_from_id(&pool, id).await?;
 
-    let id = id.unwrap();
+                match user {
+                    None => not_authenticated_response,
+                    Some(user) => HttpResponse::Ok().json(user),
+                }
+            }
+        },
+    };
 
-    if id == None {
-        return Ok(not_authenticated_response);
-    }
+    Ok(resp)
+}
 
-    let user = User::get_from_id(&pool, id.unwrap()).await;
-
-    match user {
-        Ok(u) => Ok(HttpResponse::Ok().json(u)),
-        Err(_) => Ok(not_authenticated_response),
-    }
+pub async fn logout(session: Session) -> AsyncHttpResponse {
+    session.remove("user_id");
+    Ok(HttpResponse::Ok().finish())
 }

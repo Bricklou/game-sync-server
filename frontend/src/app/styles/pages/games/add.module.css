@@ -1,0 +1,35 @@
+.add {
+  @apply p-8 max-w-7xl mx-auto;
+
+  header {
+    @apply flex items-center;
+
+    .back {
+      @apply mr-2;
+
+      svg {
+        @apply hover:text-red-400 transition-colors duration-100 ease-in-out;
+      }
+    }
+  }
+
+  h1 {
+    @apply text-3xl uppercase text-gray-800 font-semibold;
+  }
+
+  .add_btn {
+    @apply bg-red-400 text-white w-32 mx-auto;
+
+    &:hover {
+      @apply bg-red-300;
+    }
+
+    &:active {
+      @apply bg-red-200;
+    }
+  }
+
+  form {
+    @apply max-w-md p-10 flex flex-col;
+  }
+}

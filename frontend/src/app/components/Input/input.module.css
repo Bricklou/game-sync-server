@@ -1,8 +1,12 @@
 .input_container {
   @apply relative mb-4;
 
+  label {
+    @apply mb-1 text-sm transition-colors duration-150 ease-in-out text-gray-800 select-none;
+  }
+
   .input {
-    @apply rounded-md px-2 py-1 transition-all text-black w-full shadow-md outline-none;
+    @apply rounded-md px-2 py-1 transition-all text-black w-full shadow-md outline-none border border-red-400;
 
     &:hover {
       @apply scale-105 shadow-xl;

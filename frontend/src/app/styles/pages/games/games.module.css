@@ -1,0 +1,23 @@
+.games {
+  @apply p-8 max-w-7xl mx-auto;
+
+  header {
+    @apply flex flex-row justify-between;
+  }
+
+  h1 {
+    @apply text-3xl uppercase text-gray-800 font-semibold;
+  }
+
+  .add_btn {
+    @apply bg-red-400 text-white;
+
+    &:hover {
+      @apply bg-red-300;
+    }
+
+    &:active {
+      @apply bg-red-200;
+    }
+  }
+}

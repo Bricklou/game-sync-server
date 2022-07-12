@@ -1,11 +1,20 @@
 .button {
   @apply px-4 py-1 rounded-full bg-white text-red-400 shadow-md transition-all;
+  @apply inline-block;
 
-  &:hover {
+  &:hover:not(:disabled) {
     @apply bg-gray-100 scale-105 ease-in-out duration-150 shadow-lg;
   }
 
-  &:active {
+  &:active:not(:disabled) {
     @apply bg-gray-200 shadow-xl;
+  }
+
+  &:disabled {
+    @apply bg-gray-300 text-gray-500 !important;
+  }
+
+  svg {
+    @apply inline-block mr-2 h-5 w-5;
   }
 }

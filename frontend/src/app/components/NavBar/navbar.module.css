@@ -29,10 +29,10 @@
   }
 
   .link {
-    @apply text-white;
+    @apply text-white border border-transparent px-2 py-1;
 
     &.active {
-      @apply text-red-400 bg-white rounded-md px-2 py-1;
+      @apply text-red-400 bg-white rounded-md;
     }
   }
 }

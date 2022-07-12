@@ -75,6 +75,25 @@ export const refresh = createAsyncThunk<User>(`${name}/refresh`, async (userData
   }
 })
 
+export const logout = createAsyncThunk<void>(`${name}/logout`, async (userData, thunkAPI) => {
+  try {
+    const response = await API.delete('/auth')
+
+    if (response.status !== 200) {
+      return thunkAPI.rejectWithValue(response.data)
+    }
+
+    return response.data
+  } catch (e) {
+    const error = e as Error | AxiosError<ApiError | undefined>
+    if (Axios.isAxiosError(error)) {
+      const out = error?.response?.data?.error || error.message
+      return thunkAPI.rejectWithValue(out)
+    }
+    return thunkAPI.rejectWithValue((e as Error).message)
+  }
+})
+
 export const authSlice = createSlice({
   name,
   initialState,
@@ -95,6 +114,8 @@ export const authSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(register.pending, (state) => {
       state.is_loading = true
+      state.error = undefined
+      state.is_error = false
     })
     builder.addCase(register.fulfilled, (state, action) => {
       state.is_loading = false
@@ -111,6 +132,8 @@ export const authSlice = createSlice({
 
     builder.addCase(login.pending, (state) => {
       state.is_loading = true
+      state.error = undefined
+      state.is_error = false
     })
     builder.addCase(login.fulfilled, (state, action: PayloadAction<User>) => {
       state.is_loading = false
@@ -127,6 +150,8 @@ export const authSlice = createSlice({
 
     builder.addCase(refresh.pending, (state) => {
       state.is_loading = true
+      state.error = undefined
+      state.is_error = false
     })
     builder.addCase(refresh.fulfilled, (state, action: PayloadAction<User>) => {
       state.is_loading = false
@@ -140,10 +165,28 @@ export const authSlice = createSlice({
       state.error = action.payload as string
       state.is_error = true
     })
+
+    builder.addCase(logout.pending, (state) => {
+      state.is_loading = true
+      state.error = undefined
+      state.is_error = false
+    })
+    builder.addCase(logout.fulfilled, (state) => {
+      state.is_loading = false
+      state.user = undefined
+      state.is_authenticated = false
+    })
+    builder.addCase(logout.rejected, (state, action) => {
+      state.is_loading = false
+      state.user = undefined
+      state.is_authenticated = false
+      state.error = action.payload as string
+      state.is_error = true
+    })
   }
 })
 
-export const { logout, clearAuthError } = authSlice.actions
+export const { clearAuthError } = authSlice.actions
 
 export const userSelector = (state: AuthState): User | undefined => state.user
 

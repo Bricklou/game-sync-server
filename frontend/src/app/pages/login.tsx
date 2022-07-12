@@ -16,6 +16,10 @@ interface IFormValues {
   password: string
 }
 
+interface RouterRedirect {
+  from: Location
+}
+
 const schema = yup
   .object({
     username: yup.string().required().defined(),
@@ -37,7 +41,7 @@ function Login(): JSX.Element {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const redirectPath = (location.state as { path?: string })?.path || '/'
+  const redirectPath = (location.state as RouterRedirect | undefined)?.from.pathname || '/'
 
   useEffect(() => {
     if (auth.is_error) {

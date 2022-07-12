@@ -14,11 +14,14 @@ interface InputProps {
   disabled?: boolean
   error?: string
   required?: boolean
+
+  label?: string
 }
 
 function Input(props: InputProps, ref: React.Ref<HTMLInputElement>): JSX.Element {
   return (
     <div className={style.input_container}>
+      {props.label && <label htmlFor={props.id}>{props.label}</label>}
       <input
         id={props.id}
         name={props.name}

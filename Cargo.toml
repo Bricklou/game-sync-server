@@ -29,3 +29,5 @@ rand = { version = "0.8.5", features = ["std_rng"] }
 chrono = { version = "0.4.19", default-features = false, features = ["clock", "std", "serde"] }
 
 rand_core = { version = "0.6.3", features = ["std"] }
+futures-util = "0.3"
+derive_more = "0.99"

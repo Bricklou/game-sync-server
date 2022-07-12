@@ -3,7 +3,7 @@ import { RootState } from '@/store/init'
 import React from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 
-function PrivateRoute(): JSX.Element {
+function PrivateRoute(): JSX.Element | null {
   const auth = useAppSelector((state: RootState) => state?.auth)
   const location = useLocation()
 

@@ -36,7 +36,7 @@ function NavBar(): JSX.Element {
               <div className={style.links}>
                 <NavBarLink to="/">Home</NavBarLink>
                 <NavBarLink to="/games">Games</NavBarLink>
-                <NavBarLink to="/games">Saves</NavBarLink>
+                <NavBarLink to="/saves">Saves</NavBarLink>
               </div>
             </div>
           </div>
