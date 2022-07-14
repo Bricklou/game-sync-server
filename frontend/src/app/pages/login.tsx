@@ -5,7 +5,7 @@ import style from '@/styles/pages/login.module.css'
 import Input from '../components/Input'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { login, clearAuthError } from '@/store/reducer'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import { X, AlertTriangle } from 'react-feather'
@@ -21,7 +21,8 @@ interface RouterRedirect {
 }
 
 const schema = yup
-  .object({
+  .object()
+  .shape({
     username: yup.string().required().defined(),
     password: yup.string().required().defined()
   })
@@ -29,11 +30,19 @@ const schema = yup
 
 function Login(): JSX.Element {
   const {
-    register,
     clearErrors,
     handleSubmit,
-    formState: { errors }
-  } = useForm<IFormValues>({ resolver: yupResolver(schema) })
+    control,
+    formState: { errors, isValid, isDirty }
+  } = useForm<IFormValues>({
+    resolver: yupResolver(schema),
+    mode: 'onChange',
+    shouldFocusError: true,
+    defaultValues: {
+      username: '',
+      password: ''
+    }
+  })
 
   const auth = useAppSelector((state) => state?.auth)
   const dispatch = useAppDispatch()
@@ -56,12 +65,16 @@ function Login(): JSX.Element {
     dispatch(login(data))
   }
 
+  useEffect(() => {
+    console.log('isDirty', isDirty)
+    console.log('isValid', isValid)
+  }, [isDirty, isValid])
+
   return (
     <div className={style.login}>
       <div className={style.sidebar}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <h2 className={style.title}>SaveSync</h2>
-
           {auth.is_error && (
             <div className={style.error_box}>
               <AlertTriangle />
@@ -70,28 +83,41 @@ function Login(): JSX.Element {
             </div>
           )}
 
-          <Input
-            id="username"
-            placeholder="Username"
-            disabled={auth.is_loading}
-            error={errors.username?.message}
-            {...register('username', {
-              required: true
-            })}
+          <Controller
+            name="username"
+            control={control}
+            rules={{ required: true }}
+            render={({ field }) => (
+              <Input
+                id="username"
+                placeholder="Username"
+                disabled={auth.is_loading}
+                error={errors.username?.message}
+                {...field}
+              />
+            )}
           />
 
-          <Input
-            id="username"
-            type="password"
-            placeholder="Password"
-            disabled={auth.is_loading}
-            error={errors.password?.message}
-            {...register('password', {
-              required: true
-            })}
+          <Controller
+            name="password"
+            control={control}
+            rules={{ required: true }}
+            render={({ field }) => (
+              <Input
+                id="password"
+                type="password"
+                placeholder="Password"
+                disabled={auth.is_loading}
+                error={errors.password?.message}
+                {...field}
+              />
+            )}
           />
 
-          <Button classNames={style.submit_button} disabled={auth.is_loading}>
+          <Button
+            classNames={style.submit_button}
+            disabled={auth.is_loading || !isValid || !isDirty}
+          >
             Log in
           </Button>
         </form>

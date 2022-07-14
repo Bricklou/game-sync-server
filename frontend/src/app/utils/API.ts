@@ -1,4 +1,4 @@
-import Axios from 'axios'
+import Axios, { AxiosError } from 'axios'
 
 const API = Axios.create({
   baseURL: '/api',
@@ -10,6 +10,12 @@ const API = Axios.create({
 
 export interface ApiError {
   error: string
+}
+
+export function isValidationError<T extends string>(
+  error: AxiosError
+): error is AxiosError<FormValidationError<T>> {
+  return error.response?.status === 400
 }
 
 export default API

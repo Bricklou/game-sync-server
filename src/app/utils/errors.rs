@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serde::Serialize;
 
 use actix_web::{HttpResponse, ResponseError};
@@ -26,6 +28,9 @@ pub enum ServiceError {
 
     #[display(fmt = "Not found")]
     NotFound,
+
+    #[display(fmt = "Conflict")]
+    Conflict,
 }
 
 impl ResponseError for ServiceError {
@@ -34,9 +39,18 @@ impl ResponseError for ServiceError {
             ServiceError::InternalServerError => {
                 HttpResponse::InternalServerError().json("Internal server error")
             }
-            ServiceError::BadRequest(ref message) => HttpResponse::BadRequest().json(message),
-            ServiceError::Unauthorized => HttpResponse::Unauthorized().json("Unauthorized"),
-            ServiceError::NotFound => HttpResponse::NotFound().json("Not found"),
+            ServiceError::BadRequest(ref message) => {
+                HttpResponse::BadRequest().json(ErrorHandling::new(message.to_string()))
+            }
+            ServiceError::Unauthorized => {
+                HttpResponse::Unauthorized().json(ErrorHandling::new("Unauthorized".to_string()))
+            }
+            ServiceError::NotFound => {
+                HttpResponse::NotFound().json(ErrorHandling::new("Not found".to_string()))
+            }
+            ServiceError::Conflict => {
+                HttpResponse::Conflict().json(ErrorHandling::new("Already exists".to_string()))
+            }
         }
     }
 }
@@ -61,26 +75,27 @@ impl From<sqlx::Error> for ServiceError {
         }
     }
 }
-/*
 #[derive(Serialize)]
-struct ValidationErrorJsonPayload {
+pub struct ValidationErrorJsonPayload {
     pub message: String,
-    pub fields: Vec<String>,
+    pub fields: HashMap<String, Vec<String>>,
 }
 
-impl From<&validator::ValidationError> for ServiceError {
-    fn from(error: &validator::ValidationError) -> Self {
-        ServiceError::BadRequest(
-            ValidationErrorJsonPayload {
-                message: error.to_string(),
-                fields: error
-                    .field_errors()
-                    .iter()
-                    .map(|e| e.field_name.to_string())
-                    .collect(),
-            }
-            .to_string(),
-        )
+impl From<&validator::ValidationErrors> for ValidationErrorJsonPayload {
+    fn from(error: &validator::ValidationErrors) -> Self {
+        println!("{:?}", error.field_errors());
+        ValidationErrorJsonPayload {
+            message: "Validation error".to_owned(),
+            fields: error
+                .field_errors()
+                .iter()
+                .map(|(field, errors)| {
+                    (
+                        field.to_string(),
+                        errors.iter().map(|e| e.to_string()).collect(),
+                    )
+                })
+                .collect(),
+        }
     }
 }
-*/

@@ -8,13 +8,12 @@ interface InputProps {
   className?: string
   type?: React.HTMLInputTypeAttribute
   value?: string
-  onChanged?: React.ChangeEventHandler<HTMLInputElement>
+  onChange?: React.ChangeEventHandler<HTMLInputElement>
   onBlur?: React.FocusEventHandler<HTMLInputElement>
   placeholder?: string
   disabled?: boolean
   error?: string
   required?: boolean
-
   label?: string
 }
 
@@ -28,7 +27,7 @@ function Input(props: InputProps, ref: React.Ref<HTMLInputElement>): JSX.Element
         className={classNames(style.input, props.className)}
         type={props.type || 'text'}
         value={props.value}
-        onChange={props.onChanged}
+        onChange={props.onChange}
         onBlur={props.onBlur}
         placeholder={props.placeholder}
         disabled={props.disabled}

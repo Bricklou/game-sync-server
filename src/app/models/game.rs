@@ -1,5 +1,6 @@
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
+use serde_with::rust::string_empty_as_none;
 use validator::Validate;
 
 use crate::db::DbPool;
@@ -20,8 +21,8 @@ pub struct GameCreate {
     // a message having at least one charater
     #[validate(length(min = 1, message = "This field is required"))]
     pub name: String,
-    #[validate(length(min = 1, message = "This field is required"))]
     #[validate(url(message = "This field is not a valid URL"))]
+    #[serde(with = "string_empty_as_none")]
     pub link: Option<String>,
     #[validate(length(min = 1, message = "This field is required"))]
     pub author: String,
@@ -48,5 +49,18 @@ impl Game {
             created_at: game.created_at,
             updated_at: game.updated_at,
         })
+    }
+
+    pub async fn check_if_exist(game_obj: &GameCreate, pool: &DbPool) -> Result<bool, sqlx::Error> {
+        let game = sqlx::query!(
+            r#"
+            SELECT id, name, link, author, created_at, updated_at FROM games WHERE name = $1;
+            "#,
+            game_obj.name
+        )
+        .fetch_optional(pool)
+        .await?;
+
+        Ok(game.is_some())
     }
 }

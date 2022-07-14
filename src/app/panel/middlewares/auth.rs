@@ -1,17 +1,13 @@
 use std::future::{ready, Ready};
 
-use actix::fut::ok;
 use actix_session::SessionExt;
 use actix_web::{
     dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform},
-    Either, Error, HttpResponse,
+    Error, HttpResponse,
 };
 use futures_util::{future::LocalBoxFuture, FutureExt};
 
-use crate::{
-    app::{models::user::User, utils::errors::ErrorHandling},
-    db::DbPool,
-};
+use crate::{app::utils::errors::ErrorHandling, db::DbPool};
 
 pub struct Auth;
 

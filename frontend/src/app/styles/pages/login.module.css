@@ -10,6 +10,10 @@
 
     form {
       @apply flex flex-col relative -top-10;
+
+      input + p {
+        @apply text-white;
+      }
     }
 
     .title {

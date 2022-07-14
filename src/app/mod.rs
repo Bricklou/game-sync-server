@@ -1,10 +1,16 @@
 use actix_web::{
-    error::{self, JsonPayloadError, QueryPayloadError},
+    error::{self, JsonPayloadError},
     web, HttpRequest, HttpResponse,
 };
+use actix_web_validator::{Error, JsonConfig};
+use std::collections::HashMap;
+
 use tera::Tera;
 
-use self::utils::{errors::ErrorHandling, hash::Hash};
+use self::utils::{
+    errors::{ErrorHandling, ServiceError, ValidationErrorJsonPayload},
+    hash::Hash,
+};
 
 mod api;
 mod models;
@@ -33,13 +39,17 @@ pub fn setup_data(cfg: &mut web::ServiceConfig) {
 }
 
 fn configure_errors(cfg: &mut web::ServiceConfig) {
-    // Query string default configuration
-    cfg.app_data(
-        web::JsonConfig::default().error_handler(|err: JsonPayloadError, _| {
-            let resp = HttpResponse::BadRequest().json(ErrorHandling::new(err.to_string()));
-            error::InternalError::from_response(err, resp).into()
-        }),
-    );
+    // Json string default configuration
+    cfg.app_data(JsonConfig::default().error_handler(|err, _| {
+        let json_error = match &err {
+            Error::Validate(error) => ValidationErrorJsonPayload::from(error),
+            _ => ValidationErrorJsonPayload {
+                message: err.to_string(),
+                fields: HashMap::new(),
+            },
+        };
+        error::InternalError::from_response(err, HttpResponse::BadRequest().json(json_error)).into()
+    }));
 }
 
 fn json_error_handler(err: error::JsonPayloadError, _req: &HttpRequest) -> error::Error {

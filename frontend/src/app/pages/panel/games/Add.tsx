@@ -1,12 +1,14 @@
 import React from 'react'
 import style from '@/styles/pages/games/add.module.css'
 import { ArrowLeft, Save } from 'react-feather'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import Input from '@/components/Input'
 import Button from '@/components/Button'
-import { useForm } from 'react-hook-form'
-import API from '@/utils/API'
-import Axios, { AxiosError } from 'axios'
+import { Controller, useForm } from 'react-hook-form'
+import API, { isValidationError } from '@/utils/API'
+import Axios from 'axios'
+import { yupResolver } from '@hookform/resolvers/yup'
+import * as yup from 'yup'
 
 interface IFormValues {
   name: string
@@ -14,21 +16,58 @@ interface IFormValues {
   author: string
 }
 
+const schema = yup
+  .object()
+  .shape({
+    name: yup.string().required().defined(),
+    link: yup.string().url().defined(),
+    author: yup.string().required().defined()
+  })
+  .required()
+
 function Add(): JSX.Element {
   const {
-    register,
+    control,
+    setError,
     formState: { errors },
     handleSubmit
-  } = useForm<IFormValues>()
+  } = useForm<IFormValues>({
+    resolver: yupResolver(schema),
+    mode: 'onChange',
+    shouldFocusError: true,
+    defaultValues: {
+      name: '',
+      author: '',
+      link: ''
+    }
+  })
+
+  const navigate = useNavigate()
 
   const onSubmit = async (data: IFormValues): Promise<void> => {
     try {
-      const resp = await API.post('/games', data)
-      console.log(resp)
+      await API.post('/games', data)
+
+      navigate('/games')
     } catch (error) {
       if (Axios.isAxiosError(error)) {
-        const { response } = error as AxiosError
-        console.log(response?.data)
+        if (isValidationError<keyof IFormValues>(error)) {
+          const { response } = error
+
+          if (response?.data) {
+            for (const [key, value] of Object.entries(response?.data.fields)) {
+              setError(key as keyof IFormValues, {
+                type: 'validate',
+                message: value[0]
+              })
+            }
+          }
+        } else if (error.response?.status === 409) {
+          setError('name', {
+            type: 'validate',
+            message: 'Game already exists'
+          })
+        }
       }
       console.error(error)
     }
@@ -44,37 +83,48 @@ function Add(): JSX.Element {
       </header>
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Input
-          id="name"
-          label="Game Name"
-          placeholder="Game Name"
-          required={true}
-          {...register('name', {
-            required: true
-          })}
-          error={errors.name?.message}
+        <Controller
+          name="name"
+          control={control}
+          rules={{ required: true }}
+          render={({ field }) => (
+            <Input
+              id="name"
+              label="Game Name"
+              placeholder="Game Name"
+              error={errors.name?.message}
+              {...field}
+            />
+          )}
         />
 
-        <Input
-          id="link"
-          label="Game Link"
-          placeholder="Game Link"
-          required={true}
-          {...register('link', {
-            required: true
-          })}
-          error={errors.link?.message}
+        <Controller
+          name="link"
+          control={control}
+          render={({ field }) => (
+            <Input
+              id="link"
+              label="Game Link"
+              placeholder="Game Link"
+              error={errors.link?.message}
+              {...field}
+            />
+          )}
         />
 
-        <Input
-          id="author"
-          label="Game Author"
-          placeholder="Game Author"
-          required={true}
-          {...register('author', {
-            required: true
-          })}
-          error={errors.link?.message}
+        <Controller
+          name="author"
+          control={control}
+          rules={{ required: true }}
+          render={({ field }) => (
+            <Input
+              id="author"
+              label="Game Author"
+              placeholder="Game Author"
+              error={errors.author?.message}
+              {...field}
+            />
+          )}
         />
 
         <Button classNames={style.add_btn}>
