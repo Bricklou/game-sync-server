@@ -1,0 +1,24 @@
+.game_card {
+  @apply flex rounded-md border border-gray-300 p-4 gap-4;
+
+  .preview {
+    @apply bg-gray-200 h-20 w-20;
+    @apply rounded-md;
+    @apply overflow-hidden;
+    @apply flex items-center justify-center;
+
+    .image {
+    }
+    .no_image {
+      @apply text-gray-500 h-8 w-8;
+    }
+  }
+
+  .info {
+    @apply flex flex-col flex-1;
+
+    .title {
+      @apply text-lg font-bold;
+    }
+  }
+}

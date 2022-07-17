@@ -12,3 +12,20 @@ type FormValidationError<T extends string> = {
     [key in T]: string[]
   }
 }
+
+interface Game {
+  id: string
+  name: string
+  link: string | null
+  author: string
+  created_at: Date
+  updated_at: Date
+}
+
+interface Paginated<T> {
+  page: number
+  per_page: number
+  total: number
+  total_pages: number
+  items: T[]
+}

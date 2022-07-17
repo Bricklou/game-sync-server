@@ -17,7 +17,6 @@ use std::process::exit;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    std::env::set_var("RUST_LOG", "actix_web=info");
     dotenv::dotenv().ok();
     pretty_env_logger::init();
 
@@ -62,9 +61,6 @@ async fn main() -> std::io::Result<()> {
 
         App::new()
             .app_data(Data::new(server_data.clone()))
-            .configure(app::setup_data)
-            .configure(app::setup_templates)
-            .configure(app::register_urls)
             .wrap(cors)
             .wrap(SessionMiddleware::new(
                 store.clone(),
@@ -72,6 +68,9 @@ async fn main() -> std::io::Result<()> {
             ))
             .wrap(Logger::default())
             .wrap(Compress::default())
+            .configure(app::setup_data)
+            .configure(app::setup_templates)
+            .configure(app::register_urls)
     })
     .bind(&server_location)?
     .run()

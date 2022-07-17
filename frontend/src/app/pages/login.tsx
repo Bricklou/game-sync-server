@@ -65,11 +65,6 @@ function Login(): JSX.Element {
     dispatch(login(data))
   }
 
-  useEffect(() => {
-    console.log('isDirty', isDirty)
-    console.log('isValid', isValid)
-  }, [isDirty, isValid])
-
   return (
     <div className={style.login}>
       <div className={style.sidebar}>

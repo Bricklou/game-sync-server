@@ -36,26 +36,21 @@ pub async fn refresh(
     session: Session,
     pool: web::Data<DbPool>,
 ) -> AsyncHttpResponse {
-    let id = session.get::<i32>("user_id");
+    let id = session.get::<i32>("user_id").unwrap_or(None);
 
     let not_authenticated_response =
         HttpResponse::Unauthorized().json(ErrorHandling::new("User not authenticated".to_string()));
 
     let resp = match id {
-        Err(_) => HttpResponse::InternalServerError().json(ErrorHandling::new(
-            "Error while getting user session".to_string(),
-        )),
-        Ok(id) => match id {
-            None => not_authenticated_response,
-            Some(id) => {
-                let user = User::get_from_id(&pool, id).await?;
+        None => not_authenticated_response,
+        Some(id) => {
+            let user = User::get_from_id(&pool, id).await?;
 
-                match user {
-                    None => not_authenticated_response,
-                    Some(user) => HttpResponse::Ok().json(user),
-                }
+            match user {
+                None => not_authenticated_response,
+                Some(user) => HttpResponse::Ok().json(user),
             }
-        },
+        }
     };
 
     Ok(resp)

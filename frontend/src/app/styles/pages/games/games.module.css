@@ -20,4 +20,16 @@
       @apply bg-red-200;
     }
   }
+
+  .search_bar {
+    @apply flex flex-row justify-end;
+  }
+
+  .content {
+    @apply p-10;
+
+    .games_list {
+      @apply grid grid-cols-2 gap-4;
+    }
+  }
 }

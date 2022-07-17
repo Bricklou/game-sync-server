@@ -3,7 +3,10 @@ use serde::{Deserialize, Serialize};
 use serde_with::rust::string_empty_as_none;
 use validator::Validate;
 
-use crate::db::DbPool;
+use crate::{
+    app::utils::paginator::{PaginatorObject, PaginatorResponse},
+    db::DbPool,
+};
 
 #[derive(Serialize, Deserialize)]
 pub struct Game {
@@ -62,5 +65,51 @@ impl Game {
         .await?;
 
         Ok(game.is_some())
+    }
+
+    pub async fn get_games(
+        pool: &DbPool,
+        pagination: &PaginatorObject,
+    ) -> Result<PaginatorResponse<Game>, sqlx::Error> {
+        let search = pagination.search.as_ref().map(|s| s.as_str()).unwrap_or("");
+
+        log::debug!("Search input: {}", search);
+        let mut games = sqlx::query!(
+            r#"
+            SELECT * FROM games
+            WHERE
+                $1 = ''
+                OR (name ILIKE '%'||$1||'%' OR author ILIKE '%'||$1||'%')
+            ORDER BY created_at DESC
+            OFFSET $3 ROWS FETCH NEXT $2 ROWS ONLY;
+            "#,
+            search,
+            pagination.per_page,
+            pagination.page - 1
+        )
+        .fetch_all(pool)
+        .await?;
+
+        games.sort_by(|a, b| a.name.cmp(&b.name));
+
+        let games: Vec<Game> = games
+            .into_iter()
+            .map(|game| Self {
+                id: game.id,
+                name: game.name,
+                link: game.link,
+                author: game.author,
+                created_at: game.created_at,
+                updated_at: game.updated_at,
+            })
+            .collect();
+
+        Ok(PaginatorResponse::<Game> {
+            page: pagination.page,
+            per_page: pagination.per_page,
+            total: games.len() as i64,
+            total_pages: (games.len() as i64 / pagination.per_page as i64).max(1),
+            items: games,
+        })
     }
 }
