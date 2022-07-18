@@ -1,13 +1,13 @@
-.input_container {
+.select_container {
   @apply relative mb-4;
 
   label {
     @apply mb-1 text-sm transition-colors duration-150 ease-in-out text-gray-800 select-none;
   }
 
-  .input {
-    @apply rounded-md px-2 py-1 transition-all text-black w-full shadow-md outline-none border border-red-400;
-    @apply h-8 appearance-none;
+  .select {
+    @apply bg-white rounded-md px-2 py-1 transition-all text-black w-full shadow-md outline-none border border-red-400;
+    @apply h-8;
     @apply required:ring-2 required:ring-red-700;
     @apply invalid:ring-2 invalid:ring-red-700;
 

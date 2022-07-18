@@ -22,7 +22,7 @@
   }
 
   .search_bar {
-    @apply flex flex-row justify-end;
+    @apply flex flex-row justify-end gap-2;
   }
 
   .content {
@@ -31,5 +31,9 @@
     .games_list {
       @apply grid grid-cols-2 gap-4;
     }
+  }
+
+  .pagination {
+    @apply mx-auto w-fit mt-4;
   }
 }

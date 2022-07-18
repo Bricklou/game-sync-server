@@ -30,7 +30,7 @@ pub async fn init_database(pool: &DbPool) -> Result<(), sqlx::Error> {
         let hash = Hash::new();
         let hashed_password = hash.hash_password(&"admin".to_string());
 
-        if let Err(e) = hashed_password {
+        if let Err(_) = hashed_password {
             error!("Failed to hash password for admin user");
             exit(1);
         }

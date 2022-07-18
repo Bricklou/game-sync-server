@@ -35,7 +35,7 @@ impl Game {
     pub async fn create(game_obj: &GameCreate, pool: &DbPool) -> Result<Self, sqlx::Error> {
         let game = sqlx::query!(
             r#"
-            INSERT INTO games (name, link, author) VALUES ($1, $2, $3) RETURNING id, name, link, author, created_at, updated_at;
+            INSERT INTO games (name, link, author) VALUES ($1, $2, $3) RETURNING *;
             "#,
             game_obj.name,
             game_obj.link,
@@ -57,7 +57,7 @@ impl Game {
     pub async fn check_if_exist(game_obj: &GameCreate, pool: &DbPool) -> Result<bool, sqlx::Error> {
         let game = sqlx::query!(
             r#"
-            SELECT id, name, link, author, created_at, updated_at FROM games WHERE name = $1;
+            SELECT * FROM games WHERE name = $1;
             "#,
             game_obj.name
         )
@@ -71,26 +71,43 @@ impl Game {
         pool: &DbPool,
         pagination: &PaginatorObject,
     ) -> Result<PaginatorResponse<Game>, sqlx::Error> {
-        let search = pagination.search.as_ref().map(|s| s.as_str()).unwrap_or("");
+        let search = pagination.sql_search();
 
-        log::debug!("Search input: {}", search);
-        let mut games = sqlx::query!(
+        let sort = pagination.sort();
+
+        let games = sqlx::query!(
             r#"
-            SELECT * FROM games
-            WHERE
-                $1 = ''
-                OR (name ILIKE '%'||$1||'%' OR author ILIKE '%'||$1||'%')
-            ORDER BY created_at DESC
-            OFFSET $3 ROWS FETCH NEXT $2 ROWS ONLY;
+            WITH q AS (
+                SELECT 
+                    *,
+                    COUNT(*) OVER (RANGE UNBOUNDED PRECEDING) AS total_items
+                FROM games
+                WHERE
+                    $1 = ''
+                    OR (name ILIKE '%'||$1||'%' OR author ILIKE '%'||$1||'%')
+                ORDER BY
+                    case when $4 = 'name' then name end asc,
+                    case when $4 = 'author' then author end asc,
+                    case when $4 = 'created_at' then created_at end asc,
+                    case when $4 = 'created_at_desc' then created_at end desc,
+                    case when $4 = 'updated_at' then updated_at end desc,
+                    case when $4 = 'updated_at_desc' then updated_at end asc
+            )
+            SELECT
+                *
+            FROM q
+            OFFSET $2 ROWS FETCH NEXT $3 ROWS ONLY;
             "#,
             search,
+            pagination.sql_offset(),
             pagination.per_page,
-            pagination.page - 1
+            sort
         )
         .fetch_all(pool)
         .await?;
 
-        games.sort_by(|a, b| a.name.cmp(&b.name));
+        let total_items: i64 = games.first().map_or(0, |g| g.total_items.unwrap_or(0));
+        let total_pages = (total_items as f64 / pagination.per_page as f64).ceil() as i64;
 
         let games: Vec<Game> = games
             .into_iter()
@@ -107,8 +124,8 @@ impl Game {
         Ok(PaginatorResponse::<Game> {
             page: pagination.page,
             per_page: pagination.per_page,
-            total: games.len() as i64,
-            total_pages: (games.len() as i64 / pagination.per_page as i64).max(1),
+            total: total_items,
+            total_pages,
             items: games,
         })
     }

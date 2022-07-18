@@ -6,12 +6,16 @@ import { Link, useNavigate } from 'react-router-dom'
 import API from '@/utils/API'
 import GameCard from '@/components/games/GameCard'
 import Input from '@/components/Input'
+import Pagination from '@/components/Pagination'
+import Select from '@/components/Select'
 
 function Games(): JSX.Element {
   const navigate = useNavigate()
 
   const [games, setGames] = useState<Game[]>([])
-  const [page] = useState(1)
+  const [page, setPage] = useState(1)
+  const [sort, setSort] = useState('name')
+  const [totalPages, setTotalPages] = useState(1)
   const [search, setSearch] = useState('')
 
   useEffect(() => {
@@ -19,17 +23,19 @@ function Games(): JSX.Element {
       API.get<Paginated<Game>>('/games', {
         params: {
           search,
-          page
+          page,
+          sort
         }
       })
         .then((res) => {
           setGames(res.data.items)
+          setTotalPages(res.data.total_pages)
         })
         .catch((err) => console.log(err))
     }, 200)
 
     return () => clearTimeout(timeout)
-  }, [search])
+  }, [page, search, sort])
 
   return (
     <div className={style.games}>
@@ -44,6 +50,21 @@ function Games(): JSX.Element {
 
       <main className={style.content}>
         <div className={style.search_bar}>
+          <Select
+            name="sort_by"
+            id="sort_by"
+            selected="name"
+            options={[
+              { value: 'name', label: 'Name', selected: true },
+              { value: 'author', label: 'Author' },
+              { value: 'created_at', label: 'Created at' },
+              { value: 'created_at_desc', label: 'Created at (desc)' },
+              { value: 'updated_at', label: 'Updated at' },
+              { value: 'updated_at_desc', label: 'Updated at (desc)' }
+            ]}
+            onChange={(e) => setSort(e.target.value)}
+          />
+
           <Input
             id="search"
             name="search"
@@ -59,6 +80,10 @@ function Games(): JSX.Element {
               <GameCard game={game} />
             </Link>
           ))}
+        </div>
+
+        <div className={style.pagination}>
+          <Pagination page={page} totalPages={totalPages} onPageChange={(page) => setPage(page)} />
         </div>
       </main>
     </div>
