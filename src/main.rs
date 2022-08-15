@@ -3,6 +3,7 @@ extern crate pretty_env_logger;
 extern crate tera;
 
 mod app;
+mod bootstrap;
 mod db;
 
 use actix_cors::Cors;
@@ -17,8 +18,13 @@ use std::process::exit;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    dotenv::dotenv().ok();
-    pretty_env_logger::init();
+    bootstrap::boot()
+        .await
+        .map_err(|e| {
+            println!("Failed to boot the application: {:?}", e);
+            exit(1);
+        })
+        .unwrap();
 
     let server_data = db::connection_builder().await.unwrap();
     let _migrate_result = sqlx::migrate!("./migrations")
@@ -26,12 +32,12 @@ async fn main() -> std::io::Result<()> {
         .await
         .unwrap();
 
-    let server_host = dotenv::var("SERVER_HOST").unwrap_or("0.0.0.0".to_string());
-    let server_port = dotenv::var("SERVER_PORT").unwrap_or("8080".to_string());
+    let server_host = dotenvy::var("SERVER_HOST").unwrap_or("0.0.0.0".to_string());
+    let server_port = dotenvy::var("SERVER_PORT").unwrap_or("8080".to_string());
     let server_location = server_host + ":" + &server_port;
 
     let redis_connection_string = std::env::var("REDIS_URL").expect("REDIS_URL not set");
-    let app_secret = dotenv::var("APP_SECRET").expect("APP_SECRET not set");
+    let app_secret = dotenvy::var("APP_SECRET").expect("APP_SECRET not set");
 
     let store = RedisSessionStore::new(redis_connection_string)
         .await
@@ -46,7 +52,7 @@ async fn main() -> std::io::Result<()> {
     }
 
     HttpServer::new(move || {
-        let cors_origin = dotenv::var("CORS_ORIGIN").unwrap_or_else(|_| "".to_string());
+        let cors_origin = dotenvy::var("CORS_ORIGIN").unwrap_or_else(|_| "".to_string());
         let mut cors = Cors::default()
             .allow_any_method()
             .supports_credentials()

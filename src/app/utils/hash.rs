@@ -11,10 +11,10 @@ pub struct Hash {
 
 impl Hash {
     pub fn new() -> Hash {
-        let salt = SaltString::generate(&mut OsRng);
-        let argon2 = Box::new(Argon2::default());
-
-        Self { salt, argon2 }
+        Self {
+            salt: SaltString::generate(&mut OsRng),
+            argon2: Box::new(Argon2::default()),
+        }
     }
 
     pub fn hash_password(&self, password: &String) -> Result<String, password_hash::Error> {

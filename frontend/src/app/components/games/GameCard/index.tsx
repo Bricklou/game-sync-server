@@ -1,20 +1,21 @@
-import React from 'react'
+import React, { HTMLAttributes } from 'react'
 import style from './gamecard.module.css'
 import { CameraOff } from 'react-feather'
+import classNames from 'classnames'
 
-interface GameCardProps {
+type GameCardProps = {
   game: Game
-}
+} & HTMLAttributes<HTMLDivElement>
 
 function GameCard(props: GameCardProps): JSX.Element {
   return (
-    <div className={style.game_card}>
+    <div className={classNames(style.game_card, props.className)}>
       <div className={style.preview}>
         <CameraOff className={style.no_image} />
       </div>
       <div className={style.info}>
         <h1 className={style.title}>{props.game.name}</h1>
-        <p>{props.game.author}</p>
+        <p className={style.author}>{props.game.author}</p>
       </div>
     </div>
   )

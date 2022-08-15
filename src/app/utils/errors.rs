@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::Serialize;
 
-use actix_web::{HttpResponse, ResponseError};
+use actix_web::{http, HttpResponse, ResponseError};
 use derive_more::Display;
 
 #[derive(Serialize)]
@@ -31,6 +31,9 @@ pub enum ServiceError {
 
     #[display(fmt = "Conflict")]
     Conflict,
+
+    #[display(fmt = "Unprocessable Entity: {}", _0)]
+    UnprocessableEntity(String),
 }
 
 impl ResponseError for ServiceError {
@@ -50,6 +53,9 @@ impl ResponseError for ServiceError {
             }
             ServiceError::Conflict => {
                 HttpResponse::Conflict().json(ErrorHandling::new("Already exists".to_string()))
+            }
+            ServiceError::UnprocessableEntity(ref message) => {
+                HttpResponse::UnprocessableEntity().json(ErrorHandling::new(message.to_string()))
             }
         }
     }
@@ -75,6 +81,13 @@ impl From<sqlx::Error> for ServiceError {
         }
     }
 }
+
+impl From<std::io::Error> for ServiceError {
+    fn from(_: std::io::Error) -> Self {
+        ServiceError::InternalServerError
+    }
+}
+
 #[derive(Serialize)]
 pub struct ValidationErrorJsonPayload {
     pub message: String,

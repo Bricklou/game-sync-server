@@ -1,6 +1,6 @@
+import React from 'react'
 import { useAppSelector } from '@/store'
 import { RootState } from '@/store/init'
-import React from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 
 function PrivateRoute(): JSX.Element | null {

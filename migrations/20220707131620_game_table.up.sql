@@ -17,10 +17,11 @@ create type attachment_type as enum ('screenshot', 'logo');
 create table game_attachment
 (
     id      serial          not null,
-    type    attachment_type not null,
-    path    varchar(500),
+    attachment_type    attachment_type not null,
+    path    varchar(500) not null,
     game_id integer         not null,
 
     foreign key (game_id) REFERENCES games (id),
-    unique (id)
+    unique (id),
+    unique (attachment_type,game_id)
 );

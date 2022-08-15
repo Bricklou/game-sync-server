@@ -20,5 +20,9 @@
     .title {
       @apply text-lg font-bold;
     }
+
+    .author {
+      @apply text-sm italic;
+    }
   }
 }

@@ -22,6 +22,17 @@ interface Game {
   updated_at: Date
 }
 
+interface GameAttachment {
+  id: string
+  attachment: string
+  path: string
+}
+
+type GameWithAttachments = Game & {
+  logo: string | null
+  screenshots: GameAttachment[]
+}
+
 interface Paginated<T> {
   page: number
   per_page: number

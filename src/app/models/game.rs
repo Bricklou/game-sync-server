@@ -1,6 +1,6 @@
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
-use serde_with::rust::string_empty_as_none;
+use serde_with::{serde_as, NoneAsEmptyString};
 use validator::Validate;
 
 use crate::{
@@ -18,6 +18,7 @@ pub struct Game {
     pub updated_at: NaiveDateTime,
 }
 
+#[serde_as]
 #[derive(Deserialize, Serialize, Validate)]
 pub struct GameCreate {
     // Since `required` doesn't accept messages, we need to bypass by asking
@@ -25,7 +26,7 @@ pub struct GameCreate {
     #[validate(length(min = 1, message = "This field is required"))]
     pub name: String,
     #[validate(url(message = "This field is not a valid URL"))]
-    #[serde(with = "string_empty_as_none")]
+    #[serde_as(as = "NoneAsEmptyString")]
     pub link: Option<String>,
     #[validate(length(min = 1, message = "This field is required"))]
     pub author: String,
@@ -33,7 +34,8 @@ pub struct GameCreate {
 
 impl Game {
     pub async fn create(game_obj: &GameCreate, pool: &DbPool) -> Result<Self, sqlx::Error> {
-        let game = sqlx::query!(
+        let game = sqlx::query_as!(
+            Game,
             r#"
             INSERT INTO games (name, link, author) VALUES ($1, $2, $3) RETURNING *;
             "#,
@@ -44,18 +46,12 @@ impl Game {
         .fetch_one(pool)
         .await?;
 
-        Ok(Self {
-            id: game.id,
-            name: game.name,
-            link: game.link,
-            author: game.author,
-            created_at: game.created_at,
-            updated_at: game.updated_at,
-        })
+        Ok(game)
     }
 
     pub async fn check_if_exist(game_obj: &GameCreate, pool: &DbPool) -> Result<bool, sqlx::Error> {
-        let game = sqlx::query!(
+        let game = sqlx::query_as!(
+            Game,
             r#"
             SELECT * FROM games WHERE name = $1;
             "#,
@@ -128,5 +124,19 @@ impl Game {
             total_pages,
             items: games,
         })
+    }
+
+    pub async fn get_by_id(id: i32, pool: &DbPool) -> Result<Self, sqlx::Error> {
+        let game = sqlx::query_as!(
+            Game,
+            r#"
+            SELECT * FROM games WHERE id = $1;
+            "#,
+            id
+        )
+        .fetch_one(pool)
+        .await?;
+
+        Ok(game)
     }
 }

@@ -20,12 +20,12 @@ pub struct PaginatorObject {
 }
 
 impl PaginatorQuery {
-    pub fn into_object(self) -> PaginatorObject {
+    pub fn into_object(&self) -> PaginatorObject {
         PaginatorObject {
             page: self.page.unwrap_or(1),
             per_page: self.per_page.unwrap_or(10),
-            search: self.search,
-            sort: self.sort,
+            search: self.search.clone(),
+            sort: self.sort.clone(),
         }
     }
 }

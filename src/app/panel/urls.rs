@@ -4,7 +4,7 @@ use actix_csrf::{
 };
 use actix_web::{
     http::{header::HeaderName, Method},
-    web::{self, resource, ServiceConfig},
+    web::{self, ServiceConfig},
 };
 use rand::prelude::StdRng;
 
@@ -24,27 +24,16 @@ pub fn register_urls(cfg: &mut ServiceConfig) {
         .app_data(csrf_header_config)
         .service(
             web::scope("/api")
-                .service(
-                    web::scope("/auth")
-                        .route("", web::post().to(auth::views::login))
-                        .route("", web::get().to(auth::views::refresh))
-                        .service(
-                            web::resource("")
-                                .wrap(middlewares::auth::Auth)
-                                .route(web::delete().to(auth::views::logout)),
-                        ),
-                )
-                .service(web::resource("/csrf").route(web::get().to(views::csrf)))
-                .service(
-                    web::scope("")
-                        .service(
-                            web::resource("/games")
-                                .route(web::post().to(games::views::create_game))
-                                .route(web::get().to(games::views::get_games)),
-                        )
-                        .wrap(middlewares::auth::Auth),
-                )
+                .service(auth::url::register_routes())
+                .route("/csrf", web::get().to(views::csrf))
+                .service(games::url::register_urls().wrap(middlewares::auth::Auth))
                 .wrap(csrf),
+        )
+        .route(
+            "/static/{filename:.*}",
+            web::get()
+                .to(views::static_files)
+                .wrap(middlewares::auth::Auth),
         )
         .service(web::resource("{any:(.*)?}").route(web::get().to(views::index)));
 }

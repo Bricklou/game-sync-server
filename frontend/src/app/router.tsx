@@ -21,6 +21,9 @@ const Games = React.lazy(
 const GamesAdd = React.lazy(
   () => import(/* webpackPrefetch: true, webpackChunkName: "games" */ './pages/panel/games/Add')
 )
+const GamesView = React.lazy(
+  () => import(/* webpackPrefetch: true, webpackChunkName: "games" */ './pages/panel/games/View')
+)
 const NotFound = React.lazy(
   () => import(/* webpackPrefetch: true, webpackChunkName: "not_found" */ './pages/NotFound')
 )
@@ -48,6 +51,7 @@ function AppRouter(): JSX.Element {
               <Route path="/games">
                 <Route path="/games" element={<Games />} />
                 <Route path="/games/add" element={<GamesAdd />} />
+                <Route path="/games/:id" element={<GamesView />} />
               </Route>
             </Route>
           </Route>

@@ -1,0 +1,7 @@
+.game_view {
+  @apply p-8 max-w-7xl mx-auto;
+
+  h1 {
+    @apply text-3xl uppercase text-gray-800 font-semibold mb-4;
+  }
+}
